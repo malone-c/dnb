@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual N-Back Game</title>
+    <style>
+        #position {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(3, 50px);
+            gap: 5px;
+        }
+        #position div {
+            background-color: #ddd;
+        }
+        #position div.active {
+            background-color: #f00;
+        }
+        #letter {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dual N-Back Game</h1>
+    <div id="position">
+        <div></div><div></div><div></div>
+        <div></div><div></div><div></div>
+        <div></div><div></div><div></div>
+    </div>
+    <div id="letter"></div>
+    <div>
+        <button id="position-button">Position Match</button>
+        <button id="letter-button">Letter Match</button>
+    </div>
+    <div id="score"></div>
+    <button id="start-button">Start Game</button>
+
+    <script src="dual-n-back.js"></script>
+</body>
+</html>
