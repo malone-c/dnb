@@ -13,8 +13,8 @@ let state = {
     n: 2,
     currentTrial: 0,
     sequence: [],
-    score: { position: 0, letter: 0 },
-    errors: { position: 0, letter: 0 },
+    falsePositives: { position: 0, letter: 0 },
+    falseNegatives: { position: 0, letter: 0 },
     lastResponse: { position: null, letter: null },
     gameActive: false,
     gameInterval: null
@@ -32,9 +32,10 @@ function initGame() {
         });
     }
     state.currentTrial = 0;
-    state.score = { position: 0, letter: 0 };
-    state.errors = { position: 0, letter: 0 };
+    state.falsePositives = { position: 0, letter: 0 };
+    state.falseNegatives = { position: 0, letter: 0 };
     state.gameActive = true;
+    enableButtons();
     updateDisplay();
 }
 
@@ -49,14 +50,15 @@ function updateDisplay() {
     
     // Activate the current square
     document.querySelectorAll('#position div')[current.position].classList.add('active');
-    
-    document.getElementById('letter').textContent = current.letter;
 
-    // Log score to console
-    console.log(`Trial ${state.currentTrial + 1}: Position: ${state.score.position}, Letter: ${state.score.letter}`);
+    // Log current trial info to console
+    console.log(`Trial ${state.currentTrial + 1}: Position: ${current.position}, Letter: ${current.letter}`);
 
     // Play the audio for the current letter
     playLetterAudio(current.letter);
+
+    // Enable buttons for the new trial
+    enableButtons();
 }
 
 // Play audio for the given letter
@@ -74,12 +76,10 @@ function checkMatch(type) {
         const nBack = state.sequence[state.currentTrial - state.n];
         const isMatch = current[type] === nBack[type];
         
-        if (isMatch && state.lastResponse[type]) {
-            state.score[type]++;
-        } else if (!isMatch && state.lastResponse[type]) {
-            state.errors[type]++;
+        if (!isMatch && state.lastResponse[type]) {
+            state.falsePositives[type]++;
         } else if (isMatch && !state.lastResponse[type]) {
-            state.errors[type]++;
+            state.falseNegatives[type]++;
         }
     }
     state.lastResponse[type] = null;
@@ -89,6 +89,7 @@ function checkMatch(type) {
 function handleInput(type) {
     if (!state.gameActive) return;
     state.lastResponse[type] = true;
+    document.getElementById(`${type}-button`).disabled = true;
 }
 
 // Advance to the next trial
@@ -120,22 +121,37 @@ function stopGame() {
     }
     // Reset display
     document.querySelectorAll('#position div').forEach(div => div.classList.remove('active'));
-    document.getElementById('letter').textContent = '';
-    document.getElementById('score').textContent = '';
+    disableButtons();
 }
 
 // End the game and show results
 function endGame() {
     stopGame();
     const totalTrials = config.trials - state.n;
-    const positionErrorRate = (state.errors.position / totalTrials * 100).toFixed(2);
-    const letterErrorRate = (state.errors.letter / totalTrials * 100).toFixed(2);
+    const totalErrors = state.falsePositives.position + state.falsePositives.letter + 
+                        state.falseNegatives.position + state.falseNegatives.letter;
+    const errorRate = (totalErrors / (totalTrials * 2) * 100).toFixed(2);
+    const accuracy = (100 - errorRate).toFixed(2);
     
     alert(`Game Over!\n\n` +
-          `Position Matches: ${state.score.position}\n` +
-          `Letter Matches: ${state.score.letter}\n\n` +
-          `Position Error Rate: ${positionErrorRate}%\n` +
-          `Letter Error Rate: ${letterErrorRate}%`);
+          `Your accuracy rate: ${accuracy}%\n` +
+          `(Error rate: ${errorRate}%)`);
+
+    console.log('Game Over!');
+    console.log('False Positives:', state.falsePositives);
+    console.log('False Negatives:', state.falseNegatives);
+}
+
+// Enable both buttons
+function enableButtons() {
+    document.getElementById('position-button').disabled = false;
+    document.getElementById('letter-button').disabled = false;
+}
+
+// Disable both buttons
+function disableButtons() {
+    document.getElementById('position-button').disabled = true;
+    document.getElementById('letter-button').disabled = true;
 }
 
 // Event listeners

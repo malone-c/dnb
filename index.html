@@ -18,16 +18,16 @@
         #position div.active {
             background-color: #f00;
         }
-        #letter {
-            font-size: 24px;
-            margin: 20px 0;
-        }
         button, select {
             margin: 5px;
             padding: 5px 10px;
         }
         #game-controls {
             margin-top: 20px;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -48,12 +48,10 @@
         <div></div><div></div><div></div>
         <div></div><div></div><div></div>
     </div>
-    <div id="letter"></div>
     <div>
         <button id="position-button">Position Match (A)</button>
         <button id="letter-button">Letter Match (L)</button>
     </div>
-    <div id="score"></div>
 
     <script src="dual-n-back.js"></script>
 </body>
