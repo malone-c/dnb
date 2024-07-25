@@ -10,6 +10,7 @@
             grid-template-columns: repeat(3, 50px);
             grid-template-rows: repeat(3, 50px);
             gap: 5px;
+            margin-bottom: 20px;
         }
         #position div {
             background-color: #ddd;
@@ -21,13 +22,27 @@
             font-size: 24px;
             margin: 20px 0;
         }
-        button {
+        button, select {
             margin: 5px;
+            padding: 5px 10px;
+        }
+        #game-controls {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Dual N-Back Game</h1>
+    <div id="game-controls">
+        <select id="n-back-select">
+            <option value="1">1-back</option>
+            <option value="2" selected>2-back</option>
+            <option value="3">3-back</option>
+            <option value="4">4-back</option>
+        </select>
+        <button id="start-button">Start Game</button>
+        <button id="stop-button">Stop Game</button>
+    </div>
     <div id="position">
         <div></div><div></div><div></div>
         <div></div><div></div><div></div>
@@ -35,11 +50,10 @@
     </div>
     <div id="letter"></div>
     <div>
-        <button id="position-button">Position Match</button>
-        <button id="letter-button">Letter Match</button>
+        <button id="position-button">Position Match (A)</button>
+        <button id="letter-button">Letter Match (L)</button>
     </div>
     <div id="score"></div>
-    <button id="start-button">Start Game</button>
 
     <script src="dual-n-back.js"></script>
 </body>
