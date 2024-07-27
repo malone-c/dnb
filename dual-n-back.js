@@ -21,47 +21,35 @@ let state = {
 };
 
 // Audio handling
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-const audioBuffers = {};
-let audioQueue = [];
-let isPlayingAudio = false;
+let audioElement = new Audio();
+let audioLoaded = false;
+let audioDataUrls = {};
 
-// Preload audio files
-function preloadAudio() {
-    config.letters.forEach(letter => {
-        const url = `audio/${letter.toLowerCase()}.wav`;
-        fetch(url)
-            .then(response => response.arrayBuffer())
-            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-            .then(audioBuffer => {
-                audioBuffers[letter] = audioBuffer;
-            })
-            .catch(error => console.error('Error loading audio:', error));
+// Load audio files and convert to data URLs
+function loadAudioFiles() {
+    const audioPromises = config.letters.map(letter => {
+        return fetch(`audio/${letter.toLowerCase()}.wav`)
+            .then(response => response.blob())
+            .then(blob => new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve({ letter, dataUrl: reader.result });
+                reader.readAsDataURL(blob);
+            }));
+    });
+
+    return Promise.all(audioPromises).then(results => {
+        results.forEach(({ letter, dataUrl }) => {
+            audioDataUrls[letter] = dataUrl;
+        });
+        audioLoaded = true;
     });
 }
 
-// Play audio from queue
-function playNextAudio() {
-    if (audioQueue.length === 0) {
-        isPlayingAudio = false;
-        return;
-    }
-
-    isPlayingAudio = true;
-    const letter = audioQueue.shift();
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffers[letter];
-    source.connect(audioContext.destination);
-    source.onended = playNextAudio;
-    source.start();
-}
-
-// Queue audio for playback
-function queueAudio(letter) {
-    audioQueue.push(letter);
-    if (!isPlayingAudio) {
-        playNextAudio();
-    }
+// Play audio for the given letter
+function playAudio(letter) {
+    if (!audioLoaded) return;
+    audioElement.src = audioDataUrls[letter];
+    audioElement.play().catch(error => console.error('Audio playback failed:', error));
 }
 
 // Initialize the game
@@ -98,8 +86,8 @@ function updateDisplay() {
     // Log current trial info to console
     console.log(`Trial ${state.currentTrial + 1}: Position: ${current.position}, Letter: ${current.letter}`);
 
-    // Queue the audio for the current letter
-    queueAudio(current.letter);
+    // Play the audio for the current letter
+    playAudio(current.letter);
 
     // Enable buttons for the new trial
     enableButtons();
@@ -144,12 +132,18 @@ function nextTrial() {
 
 // Start the game
 function startGame() {
-    // Resume audio context if it's suspended (important for mobile)
-    if (audioContext.state === 'suspended') {
-        audioContext.resume();
+    if (!audioLoaded) {
+        loadAudioFiles().then(() => {
+            initGame();
+            state.gameInterval = setInterval(nextTrial, config.interval);
+        }).catch(error => {
+            console.error('Failed to load audio files:', error);
+            alert('Failed to load audio files. Please try again.');
+        });
+    } else {
+        initGame();
+        state.gameInterval = setInterval(nextTrial, config.interval);
     }
-    initGame();
-    state.gameInterval = setInterval(nextTrial, config.interval);
 }
 
 // Stop the game
@@ -162,8 +156,6 @@ function stopGame() {
     // Reset display
     document.querySelectorAll('#position div').forEach(div => div.classList.remove('active'));
     disableButtons();
-    // Clear audio queue
-    audioQueue = [];
 }
 
 // End the game and show results
@@ -210,6 +202,3 @@ document.addEventListener('keydown', (event) => {
         handleInput('letter');
     }
 });
-
-// Preload audio when the page loads
-window.addEventListener('load', preloadAudio);
