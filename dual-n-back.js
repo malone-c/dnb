@@ -6,6 +6,7 @@ const config = {
     positions: 3 * 3, // 3x3 grid
     letters: ['C', 'H', 'K', 'L', 'Q', 'R', 'S', 'T'], // Only using available letters
     interval: 3000, // 3 seconds
+    positionFlashTime: 500, // 0.5 seconds
 };
 
 // Game state
@@ -17,7 +18,8 @@ let state = {
     falseNegatives: { position: 0, letter: 0 },
     lastResponse: { position: null, letter: null },
     gameActive: false,
-    gameInterval: null
+    gameInterval: null,
+    positionFlashInterval: null,
 };
 
 // Audio handling
@@ -52,7 +54,6 @@ function playAudio(letter) {
     audioElement.play().catch(error => console.error('Audio playback failed:', error));
 }
 
-// Initialize the game
 function initGame() {
     stopGame(); // Stop any ongoing game
     state.n = parseInt(document.getElementById('n-back-select').value);
@@ -69,6 +70,10 @@ function initGame() {
     state.gameActive = true;
     enableButtons();
     updateDisplay();
+}
+
+function hidePosition() {
+    document.querySelectorAll('#position div').forEach(div => div.classList.remove('active'));
 }
 
 // Update the display
@@ -135,6 +140,7 @@ function startGame() {
     if (!audioLoaded) {
         loadAudioFiles().then(() => {
             initGame();
+            state.positionFlashInterval = setInterval(hidePosition, config.positionFlashTime);
             state.gameInterval = setInterval(nextTrial, config.interval);
         }).catch(error => {
             console.error('Failed to load audio files:', error);
