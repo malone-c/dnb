@@ -4,53 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dual N-Back Game</title>
-    <style>
-        #position {
-            display: grid;
-            grid-template-columns: repeat(3, 50px);
-            grid-template-rows: repeat(3, 50px);
-            gap: 5px;
-            margin-bottom: 20px;
-        }
-        #position div {
-            background-color: #ddd;
-        }
-        #position div.active {
-            background-color: #f00;
-        }
-        button, select {
-            margin: 5px;
-            padding: 5px 10px;
-        }
-        #game-controls {
-            margin-top: 20px;
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Dual N-Back Game</h1>
-    <div id="game-controls">
-        <select id="n-back-select">
-            <option value="1">1-back</option>
-            <option value="2" selected>2-back</option>
-            <option value="3">3-back</option>
-            <option value="4">4-back</option>
-        </select>
-        <button id="start-button">Start Game</button>
-        <button id="stop-button">Stop Game</button>
-    </div>
-    <div id="position">
-        <div></div><div></div><div></div>
-        <div></div><div></div><div></div>
-        <div></div><div></div><div></div>
-    </div>
-    <div>
-        <button id="position-button">Position Match (A)</button>
-        <button id="letter-button">Letter Match (L)</button>
+    <div class="game-container">
+        <h1>Dual N-Back Game</h1>
+        <div id="game-controls">
+            <select id="n-back-select">
+                <option value="1">1-back</option>
+                <option value="2" selected>2-back</option>
+                <option value="3">3-back</option>
+                <option value="4">4-back</option>
+            </select>
+            <button id="start-button">Start Game</button>
+            <button id="stop-button">Stop Game</button>
+        </div>
+        <div id="position">
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+        </div>
+        <div>
+            <button id="position-button">Position Match (A)</button>
+            <button id="letter-button">Letter Match (L)</button>
+        </div>
     </div>
 
     <script src="dual-n-back.js"></script>

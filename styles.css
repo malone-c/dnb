@@ -1,0 +1,51 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.game-container {
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#position {
+    display: grid;
+    grid-template-columns: repeat(3, 50px);
+    grid-template-rows: repeat(3, 50px);
+    gap: 5px;
+    margin: 20px auto;
+    width: fit-content; /* This ensures the grid is only as wide as its content */
+    justify-content: center; /* This centers the grid items horizontally */
+}
+
+#position div {
+    background-color: #ddd;
+    border-radius: 5px;
+}
+
+#position div.active {
+    background-color: #f00;
+}
+
+button, select {
+    margin: 5px;
+    padding: 5px 10px;
+    font-size: 16px;
+}
+
+#game-controls {
+    margin-top: 20px;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
