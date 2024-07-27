@@ -20,6 +20,50 @@ let state = {
     gameInterval: null
 };
 
+// Audio handling
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const audioBuffers = {};
+let audioQueue = [];
+let isPlayingAudio = false;
+
+// Preload audio files
+function preloadAudio() {
+    config.letters.forEach(letter => {
+        const url = `audio/${letter.toLowerCase()}.wav`;
+        fetch(url)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                audioBuffers[letter] = audioBuffer;
+            })
+            .catch(error => console.error('Error loading audio:', error));
+    });
+}
+
+// Play audio from queue
+function playNextAudio() {
+    if (audioQueue.length === 0) {
+        isPlayingAudio = false;
+        return;
+    }
+
+    isPlayingAudio = true;
+    const letter = audioQueue.shift();
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffers[letter];
+    source.connect(audioContext.destination);
+    source.onended = playNextAudio;
+    source.start();
+}
+
+// Queue audio for playback
+function queueAudio(letter) {
+    audioQueue.push(letter);
+    if (!isPlayingAudio) {
+        playNextAudio();
+    }
+}
+
 // Initialize the game
 function initGame() {
     stopGame(); // Stop any ongoing game
@@ -54,19 +98,11 @@ function updateDisplay() {
     // Log current trial info to console
     console.log(`Trial ${state.currentTrial + 1}: Position: ${current.position}, Letter: ${current.letter}`);
 
-    // Play the audio for the current letter
-    playLetterAudio(current.letter);
+    // Queue the audio for the current letter
+    queueAudio(current.letter);
 
     // Enable buttons for the new trial
     enableButtons();
-}
-
-// Play audio for the given letter
-function playLetterAudio(letter) {
-    if (!state.gameActive) return;
-
-    const audio = new Audio(`audio/${letter.toLowerCase()}.wav`);
-    audio.play().catch(error => console.error('Audio playback failed:', error));
 }
 
 // Check for matches
@@ -108,6 +144,10 @@ function nextTrial() {
 
 // Start the game
 function startGame() {
+    // Resume audio context if it's suspended (important for mobile)
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
     initGame();
     state.gameInterval = setInterval(nextTrial, config.interval);
 }
@@ -122,6 +162,8 @@ function stopGame() {
     // Reset display
     document.querySelectorAll('#position div').forEach(div => div.classList.remove('active'));
     disableButtons();
+    // Clear audio queue
+    audioQueue = [];
 }
 
 // End the game and show results
@@ -168,3 +210,6 @@ document.addEventListener('keydown', (event) => {
         handleInput('letter');
     }
 });
+
+// Preload audio when the page loads
+window.addEventListener('load', preloadAudio);
