@@ -19,7 +19,6 @@ let state = {
     lastResponse: { position: null, letter: null },
     gameActive: false,
     gameInterval: null,
-    positionFlashInterval: null,
 };
 
 // Audio handling
@@ -72,10 +71,6 @@ function initGame() {
     updateDisplay();
 }
 
-function hidePosition() {
-    document.querySelectorAll('#position div').forEach(div => div.classList.remove('active'));
-}
-
 // Update the display
 function updateDisplay() {
     if (!state.gameActive) return;
@@ -85,14 +80,19 @@ function updateDisplay() {
     // Reset all squares
     document.querySelectorAll('#position div').forEach(div => div.classList.remove('active'));
     
+    // Play the audio for the current letter
+    playAudio(current.letter)
+
     // Activate the current square
-    document.querySelectorAll('#position div')[current.position].classList.add('active');
+    let div_classes = document.querySelectorAll('#position div')[current.position].classList
+    setTimeout(() => {
+        div_classes.add('active')
+        setTimeout(() => div_classes.remove('active'), 500);
+    }, 500);
 
     // Log current trial info to console
     console.log(`Trial ${state.currentTrial + 1}: Position: ${current.position}, Letter: ${current.letter}`);
 
-    // Play the audio for the current letter
-    playAudio(current.letter);
 
     // Enable buttons for the new trial
     enableButtons();
@@ -122,7 +122,7 @@ function handleInput(type) {
 }
 
 // Advance to the next trial
-function nextTrial() {
+async function nextTrial() {
     if (!state.gameActive) return;
 
     checkMatch('position');
@@ -140,7 +140,6 @@ function startGame() {
     if (!audioLoaded) {
         loadAudioFiles().then(() => {
             initGame();
-            state.positionFlashInterval = setInterval(hidePosition, config.positionFlashTime);
             state.gameInterval = setInterval(nextTrial, config.interval);
         }).catch(error => {
             console.error('Failed to load audio files:', error);
